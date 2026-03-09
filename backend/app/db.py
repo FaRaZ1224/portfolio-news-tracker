@@ -15,8 +15,18 @@ class Base(DeclarativeBase):
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is required")
 
+
+def _coerce_sqlalchemy_database_url(url: str) -> str:
+    # Render may run newer Python versions where psycopg2 wheels are not available.
+    # We standardize on psycopg (psycopg3) for Postgres.
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+psycopg://", 1)
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+psycopg://", 1)
+    return url
+
 engine = create_engine(
-    DATABASE_URL,
+    _coerce_sqlalchemy_database_url(DATABASE_URL),
     pool_pre_ping=True,
 )
 
