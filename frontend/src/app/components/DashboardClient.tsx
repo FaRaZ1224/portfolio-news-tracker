@@ -28,13 +28,17 @@ export default function DashboardClient() {
     setLoading(true);
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 20000);
+      const timeout = setTimeout(() => controller.abort(), 60000);
       const data = await fetchCompanies(controller.signal);
       clearTimeout(timeout);
       setCompanies(data);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to load";
-      setError(msg.includes("aborted") ? "Backend request timed out. Try again in a few seconds." : msg);
+      setError(
+        msg.includes("aborted")
+          ? "Backend is taking too long to respond (may be waking up). Wait a bit and press Retry."
+          : msg
+      );
     } finally {
       setLoading(false);
     }
