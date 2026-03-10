@@ -38,7 +38,10 @@ app.add_middleware(
 
 @app.on_event("startup")
 def _startup_create_tables():
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception:
+        return
 
 
 @app.get("/health")
