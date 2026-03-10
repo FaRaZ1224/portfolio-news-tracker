@@ -187,11 +187,6 @@ export default function DashboardClient() {
             </table>
           </div>
         )}
-
-        <div className="mt-10 text-xs text-zinc-500">
-          Configure <span className="font-medium text-zinc-700">NEXT_PUBLIC_API_BASE_URL</span> in Netlify to point to
-          your backend base URL.
-        </div>
       </div>
     </div>
   );
