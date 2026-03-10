@@ -25,14 +25,14 @@ from app.services.summarizer import generate_company_summary
 
 app = FastAPI(title="Initialized Portfolio News Tracker")
 
-if CORS_ALLOW_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=CORS_ALLOW_ORIGINS,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+_allow_all_origins = (not CORS_ALLOW_ORIGINS) or ("*" in CORS_ALLOW_ORIGINS)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"] if _allow_all_origins else CORS_ALLOW_ORIGINS,
+    allow_credentials=False if _allow_all_origins else True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")
@@ -47,7 +47,10 @@ def health():
 
 @app.post("/scrape-portfolio")
 async def scrape_portfolio():
-    scraped = await scrape_initialized_portfolio()
+    try:
+        scraped = await scrape_initialized_portfolio()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Scrape failed: {e.__class__.__name__}")
     if not scraped:
         raise HTTPException(status_code=502, detail="No companies scraped")
 
