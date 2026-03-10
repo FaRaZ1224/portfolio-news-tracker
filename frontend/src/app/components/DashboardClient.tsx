@@ -48,8 +48,6 @@ export default function DashboardClient() {
     void load();
   }, [load]);
 
-  const totalArticles = useMemo(() => companies.reduce((acc, c) => acc + (c.articles?.length || 0), 0), [companies]);
-
   const onRefreshAll = useCallback(async () => {
     setBusyGlobal(true);
     setError(null);
@@ -86,8 +84,7 @@ export default function DashboardClient() {
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">Initialized Portfolio News Tracker</h1>
             <p className="text-sm text-zinc-600">
-              Companies: <span className="font-medium text-zinc-900">{companies.length}</span> · Articles:{" "}
-              <span className="font-medium text-zinc-900">{totalArticles}</span>
+              Companies: <span className="font-medium text-zinc-900">{companies.length}</span>
             </p>
           </div>
 
@@ -131,7 +128,6 @@ export default function DashboardClient() {
                   <th className="w-12 px-4 py-3"> </th>
                   <th className="px-4 py-3">Company</th>
                   <th className="hidden px-4 py-3 sm:table-cell">Tags</th>
-                  <th className="hidden px-4 py-3 md:table-cell">Summary</th>
                   <th className="w-40 px-4 py-3 text-right"> </th>
                 </tr>
               </thead>
@@ -139,13 +135,13 @@ export default function DashboardClient() {
                 {companies.map((company) => {
                   const isBusy = busyCompanyId === company.id || busyGlobal;
                   return (
-                    <tbody key={company.id} className="[&>tr]:w-full">
-                      <tr className="border-t border-zinc-200 align-top">
+                    <>
+                      <tr key={`company-${company.id}`} className="border-t border-zinc-200 align-top">
                         <td className="px-4 py-4">
-                          <div className="h-10 w-10 overflow-hidden rounded-lg bg-white ring-1 ring-zinc-200">
+                          <div className="h-14 w-14 overflow-hidden rounded-xl bg-white ring-1 ring-zinc-200">
                             {company.logo_url ? (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={company.logo_url} alt={company.name} className="h-full w-full object-contain p-1" />
+                              <img src={company.logo_url} alt={company.name} className="h-full w-full object-contain p-2" />
                             ) : (
                               <div className="h-full w-full bg-zinc-100" />
                             )}
@@ -164,14 +160,12 @@ export default function DashboardClient() {
                                 Website
                               </a>
                             ) : null}
+                            <div className="mt-2 line-clamp-3 text-sm leading-6 text-zinc-900">
+                              {company.summary?.summary_text || "No summary yet. Click Refresh."}
+                            </div>
                           </div>
                         </td>
                         <td className="hidden px-4 py-4 text-xs text-zinc-600 sm:table-cell">{company.sector || "—"}</td>
-                        <td className="hidden px-4 py-4 md:table-cell">
-                          <div className="line-clamp-2 text-sm leading-6 text-zinc-900">
-                            {company.summary?.summary_text || "No summary yet. Click Refresh."}
-                          </div>
-                        </td>
                         <td className="px-4 py-4 text-right">
                           <button
                             onClick={() => onRefreshCompany(company.id)}
@@ -182,42 +176,7 @@ export default function DashboardClient() {
                           </button>
                         </td>
                       </tr>
-
-                      <tr className="border-t border-zinc-200 bg-white">
-                        <td colSpan={5} className="px-4 py-4">
-                          <div className="text-xs font-semibold text-zinc-700">News</div>
-                          {company.articles?.length ? (
-                            <div className="mt-3 divide-y divide-zinc-200 rounded-lg border border-zinc-200">
-                              {company.articles.slice(0, 8).map((a) => (
-                                <a
-                                  key={a.id}
-                                  href={a.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="block bg-white px-3 py-3 hover:bg-zinc-50"
-                                >
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0">
-                                      <div className="line-clamp-2 text-sm font-medium text-zinc-950">{a.title}</div>
-                                      <div className="mt-1 text-xs text-zinc-600">
-                                        {(a.source || "Unknown source") + (a.published_at ? ` · ${formatDate(a.published_at)}` : "")}
-                                      </div>
-                                    </div>
-                                    {a.is_new ? (
-                                      <div className="shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold text-emerald-800 ring-1 ring-emerald-200">
-                                        NEW
-                                      </div>
-                                    ) : null}
-                                  </div>
-                                </a>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="mt-2 text-sm text-zinc-500">No recent articles found yet.</div>
-                          )}
-                        </td>
-                      </tr>
-                    </tbody>
+                    </>
                   );
                 })}
               </tbody>

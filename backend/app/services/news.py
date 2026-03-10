@@ -50,7 +50,7 @@ async def fetch_company_news_google_rss(
     when_days: int | None = 30,
 ) -> list[NewsArticle]:
     suffix = f" when:{when_days}d" if when_days else ""
-    query = quote_plus(f"{company_name} startup{suffix}")
+    query = quote_plus(f"\"{company_name}\"{suffix}")
     url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
 
     try:
@@ -106,7 +106,7 @@ async def fetch_company_news_newsapi(
     from_date = (now - dt.timedelta(days=from_days)).date().isoformat()
 
     params = {
-        "q": f"{company_name} startup",
+        "q": f"\"{company_name}\"",
         "pageSize": str(max_articles),
         "sortBy": "publishedAt",
         "language": "en",

@@ -37,14 +37,30 @@ def generate_company_summary(company_name: str, articles: list[dict]) -> str:
         )
 
     prompt = (
-        "You are summarizing recent news about a startup.\n\n"
+        "You are summarizing recent news about a startup company.\n\n"
         f"Company: {company_name}\n\n"
         "Articles:\n"
         + "\n".join(articles_lines)
         + "\n\n"
-        "Write a concise 2–3 sentence summary explaining what the company has recently done. "
-        "Focus only on factual updates supported by the article text. Avoid speculation. "
-        "If the articles do not contain concrete updates, say that there were no clear recent announcements."
+        "Each article may contain:\n"
+        "- Title\n"
+        "- Source\n"
+        "- Published date\n"
+        "- Snippet\n"
+        "- ArticleText (full extracted article text)\n\n"
+        "Instructions:\n"
+        "Use the article text as the primary source of information when available. Titles and snippets may be used only if the article text is missing.\n\n"
+        "Write a concise 2–3 sentence summary describing the company's recent developments.\n\n"
+        "Focus only on factual updates such as:\n"
+        "- product launches\n"
+        "- funding\n"
+        "- partnerships\n"
+        "- acquisitions\n"
+        "- expansions\n"
+        "- strategic announcements\n\n"
+        "Do not speculate or invent information.\n\n"
+        "If the articles do not contain clear business developments, respond with:\n"
+        '"No clear recent company announcements were reported in the available articles."'
     )
 
     resp = client.chat.completions.create(
