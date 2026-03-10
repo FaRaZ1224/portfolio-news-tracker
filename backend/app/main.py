@@ -141,6 +141,7 @@ async def refresh_company(company_id: int):
         now = dt.datetime.now(dt.UTC)
         added = 0
         summary_generated = False
+        summary_error: str | None = None
 
         try:
             discovered = await discover_company_news_with_fallback(
@@ -218,7 +219,7 @@ async def refresh_company(company_id: int):
         try:
             usable = [a for a in articles_for_summary if a.title and a.url]
             if not usable:
-                summary_text = "No recent news mentions were found for this company."
+                summary_text = "No clear recent company announcements were reported in the available articles."
             else:
                 summary_text = generate_company_summary(
                     company.name,
@@ -234,8 +235,9 @@ async def refresh_company(company_id: int):
                     ],
                 )
             summary_generated = True
-        except Exception:
-            summary_text = "No recent news mentions were found for this company."
+        except Exception as e:
+            summary_text = "No clear recent company announcements were reported in the available articles."
+            summary_error = f"{e.__class__.__name__}: {e}"
             summary_generated = False
 
         try:
@@ -245,10 +247,18 @@ async def refresh_company(company_id: int):
             else:
                 db.add(Summary(company_id=company.id, summary_text=summary_text))
             db.commit()
-        except Exception:
+        except Exception as e:
             db.rollback()
+            if not summary_error:
+                summary_error = f"DBWriteError: {e.__class__.__name__}: {e}"
 
-        return {"company_id": company.id, "articles_added": added, "summary_generated": summary_generated}
+        return {
+            "company_id": company.id,
+            "articles_added": added,
+            "summary_generated": summary_generated,
+            "summary_text": summary_text,
+            "error": summary_error,
+        }
 
 
 @app.post("/refresh-all")

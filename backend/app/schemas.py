@@ -37,3 +37,5 @@ class RefreshResponse(BaseModel):
     company_id: int
     articles_added: int
     summary_generated: bool
+    summary_text: str | None = None
+    error: str | None = None

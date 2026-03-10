@@ -53,6 +53,10 @@ export async function refreshCompany(companyId: number): Promise<void> {
   if (!res.ok) {
     throw new Error(`Failed to refresh company: ${res.status}`);
   }
+  const data = await res.json().catch(() => null);
+  if (data && typeof data === "object" && "error" in data && data.error) {
+    throw new Error(String(data.error));
+  }
 }
 
 export async function refreshAll(): Promise<void> {
@@ -61,5 +65,12 @@ export async function refreshAll(): Promise<void> {
   });
   if (!res.ok) {
     throw new Error(`Failed to refresh all: ${res.status}`);
+  }
+  const data = await res.json().catch(() => null);
+  if (data && typeof data === "object" && "results" in data && Array.isArray((data as any).results)) {
+    const firstError = (data as any).results.find((r: any) => r && r.error);
+    if (firstError?.error) {
+      throw new Error(String(firstError.error));
+    }
   }
 }

@@ -23,9 +23,11 @@ export default function DashboardClient() {
   const [busyCompanyId, setBusyCompanyId] = useState<number | null>(null);
   const [busyGlobal, setBusyGlobal] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (opts?: { soft?: boolean }) => {
     setError(null);
-    setLoading(true);
+    if (!opts?.soft) {
+      setLoading(true);
+    }
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 60000);
@@ -40,7 +42,9 @@ export default function DashboardClient() {
           : msg
       );
     } finally {
-      setLoading(false);
+      if (!opts?.soft) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -53,7 +57,7 @@ export default function DashboardClient() {
     setError(null);
     try {
       await refreshAll();
-      await load();
+      await load({ soft: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to refresh all");
     } finally {
@@ -67,7 +71,7 @@ export default function DashboardClient() {
       setError(null);
       try {
         await refreshCompany(companyId);
-        await load();
+        await load({ soft: true });
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to refresh");
       } finally {
