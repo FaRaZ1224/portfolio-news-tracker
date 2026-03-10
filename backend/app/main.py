@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 load_dotenv()
 
@@ -85,7 +86,14 @@ async def scrape_portfolio():
 @app.get("/companies", response_model=list[CompanyOut])
 def get_companies():
     with get_db_session() as db:
-        companies = db.scalars(select(Company).order_by(Company.name.asc())).all()
+        companies = db.scalars(
+            select(Company)
+            .options(
+                selectinload(Company.articles),
+                selectinload(Company.summary),
+            )
+            .order_by(Company.name.asc())
+        ).all()
         out: list[CompanyOut] = []
         for c in companies:
             summary = None
