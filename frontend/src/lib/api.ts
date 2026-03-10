@@ -35,9 +35,10 @@ function getBaseUrl(): string {
   return API_BASE_URL.replace(/\/$/, "");
 }
 
-export async function fetchCompanies(): Promise<Company[]> {
+export async function fetchCompanies(signal?: AbortSignal): Promise<Company[]> {
   const res = await fetch(`${getBaseUrl()}/companies`, {
     cache: "no-store",
+    signal,
   });
   if (!res.ok) {
     throw new Error(`Failed to fetch companies: ${res.status}`);
@@ -51,15 +52,6 @@ export async function refreshCompany(companyId: number): Promise<void> {
   });
   if (!res.ok) {
     throw new Error(`Failed to refresh company: ${res.status}`);
-  }
-}
-
-export async function scrapePortfolio(): Promise<void> {
-  const res = await fetch(`${getBaseUrl()}/scrape-portfolio`, {
-    method: "POST",
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to scrape portfolio: ${res.status}`);
   }
 }
 
